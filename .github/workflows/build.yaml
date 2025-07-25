@@ -14,13 +14,13 @@ jobs:
         include:
           - os: ubuntu-latest
             artifact_name: yuml-parser-linux
-            exe_name: main
+            exe_name: yuml_parser
           - os: windows-latest
             artifact_name: yuml-parser-windows.exe
-            exe_name: main.exe
+            exe_name: yuml_parser.exe
           - os: macos-latest
             artifact_name: yuml-parser-macos
-            exe_name: main
+            exe_name: yuml_parser
 
     steps:
       - uses: actions/checkout@v4
@@ -31,7 +31,7 @@ jobs:
 
       - run: pip install pyinstaller
 
-      - run: pyinstaller --onefile main.py
+      - run: pyinstaller --onefile --name yuml_parser main.py
 
       - uses: actions/upload-artifact@v4
         with:
