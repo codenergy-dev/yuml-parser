@@ -10,7 +10,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
         include:
           - os: ubuntu-latest
             artifact_name: yuml-parser-linux
@@ -18,6 +18,9 @@ jobs:
           - os: windows-latest
             artifact_name: yuml-parser-windows.exe
             exe_name: main.exe
+          - os: macos-latest
+            artifact_name: yuml-parser-macos
+            exe_name: main
 
     steps:
       - uses: actions/checkout@v4
