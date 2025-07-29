@@ -33,7 +33,8 @@ def parse_yuml(yuml: str):
         if len(matches) == 2:
           fromPipeline, _, _ = parse_pipeline(matches[0])
           toPipeline, _, _ = parse_pipeline(matches[1])
-          if toPipeline == pipeline:
+          dependency = parse_pipeline_dependency(lines[j])
+          if toPipeline == pipeline and dependency == 'required':
             pipelines[pipeline].fanIn.append(fromPipeline)
 
   for pipeline in pipelines.values():
@@ -51,6 +52,14 @@ def parse_pipeline(match: str):
   function = pipeline.split(':')[0]
   args = parse_pipeline_args(parts)
   return pipeline, function, args
+
+def parse_pipeline_dependency(line: str):
+  if len(re.findall(r'\]->\[', line)) > 0:
+    return 'required'
+  elif len(re.findall(r'\]-.->\[', line)) > 0:
+    return 'optional'
+  else:
+    return 'none'
 
 def parse_pipeline_args(parts: list[str]):
   args = {}
