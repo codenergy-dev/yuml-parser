@@ -1,8 +1,10 @@
 import re
+from pathlib import Path
 from yuml_parser.parse_value import parse_value
 from yuml_parser.pipeline import Pipeline
 
 def parse_yuml(yuml: str):
+  group = Path(yuml).name.split('.')[0]
   pipelines: dict[str, Pipeline] = {}
 
   with open(yuml, 'r') as f:
@@ -13,7 +15,7 @@ def parse_yuml(yuml: str):
     matches = match_pipelines(lines[i])
     if len(matches):
       pipeline, function, args = parse_pipeline(matches[0])
-      pipelines[pipeline] = pipelines[pipeline] if pipelines.get(pipeline) else Pipeline(pipeline, function)
+      pipelines[pipeline] = pipelines[pipeline] if pipelines.get(pipeline) else Pipeline(pipeline, function, group)
       pipelines[pipeline].args.update(args)
       for j in range(i, len(lines)):
         matches = match_pipelines(lines[j])
@@ -26,7 +28,7 @@ def parse_yuml(yuml: str):
     matches = match_pipelines(lines[i])
     if len(matches) > 1:
       pipeline, function, args = parse_pipeline(matches[1])
-      pipelines[pipeline] = pipelines[pipeline] if pipelines.get(pipeline) else Pipeline(pipeline, function)
+      pipelines[pipeline] = pipelines[pipeline] if pipelines.get(pipeline) else Pipeline(pipeline, function, group)
       pipelines[pipeline].args.update(args)
       for j in range(i, len(lines)):
         matches = match_pipelines(lines[j])
