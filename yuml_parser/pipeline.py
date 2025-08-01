@@ -6,3 +6,4 @@ class Pipeline:
     self.args: dict = args if args else {}
     self.fanIn: list[str] = []
     self.fanOut: list[str] = []
+    self.entrypoint: bool = True

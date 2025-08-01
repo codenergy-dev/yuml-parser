@@ -14,30 +14,9 @@ def parse_yuml(yuml: str):
   for i in range(len(lines)):
     matches = match_pipelines(lines[i])
     if len(matches):
-      pipeline, function, args = parse_pipeline(matches[0])
-      pipelines[pipeline] = pipelines[pipeline] if pipelines.get(pipeline) else Pipeline(pipeline, function, group)
-      pipelines[pipeline].args.update(args)
-      for j in range(i, len(lines)):
-        matches = match_pipelines(lines[j])
-        if len(matches) == 2:
-          fromPipeline, _, _ = parse_pipeline(matches[0])
-          toPipeline, _, _ = parse_pipeline(matches[1])
-          if fromPipeline == pipeline:
-            pipelines[pipeline].fanOut.append(toPipeline)
-    
-    matches = match_pipelines(lines[i])
+      set_pipelines(group, pipelines, matches[0], i, lines)
     if len(matches) > 1:
-      pipeline, function, args = parse_pipeline(matches[1])
-      pipelines[pipeline] = pipelines[pipeline] if pipelines.get(pipeline) else Pipeline(pipeline, function, group)
-      pipelines[pipeline].args.update(args)
-      for j in range(i, len(lines)):
-        matches = match_pipelines(lines[j])
-        if len(matches) == 2:
-          fromPipeline, _, _ = parse_pipeline(matches[0])
-          toPipeline, _, _ = parse_pipeline(matches[1])
-          dependency = parse_pipeline_dependency(lines[j])
-          if toPipeline == pipeline and dependency == 'required':
-            pipelines[pipeline].fanIn.append(fromPipeline)
+      set_pipelines(group, pipelines, matches[1], i, lines)
 
   for pipeline in pipelines.values():
     pipeline.fanIn = list(dict.fromkeys(pipeline.fanIn))
@@ -47,6 +26,37 @@ def parse_yuml(yuml: str):
 
 def match_pipelines(line: str):
   return re.findall(r'\[([^\[\]]+)\]', line)
+
+def set_pipelines(
+  group: str,
+  pipelines: dict[str, Pipeline],
+  match: str,
+  index: int,
+  lines: list[str],
+):
+  pipeline, function, args = parse_pipeline(match)
+  pipelines[pipeline] = pipelines[pipeline] if pipelines.get(pipeline) else Pipeline(pipeline, function, group)
+  pipelines[pipeline].args.update(args)
+  for j in range(index, len(lines)):
+    matches = match_pipelines(lines[j])
+    if len(matches) == 2:
+      leftPipeline, _, _ = parse_pipeline(matches[0])
+      rightPipeline, _, _ = parse_pipeline(matches[1])
+      dependency = parse_pipeline_dependency(lines[j])
+      if not dependency:
+        return
+      if dependency != 'reversal':
+        if leftPipeline == pipeline:
+          pipelines[pipeline].fanOut.append(rightPipeline)
+        elif rightPipeline == pipeline and dependency == 'required':
+          pipelines[pipeline].entrypoint = False
+          pipelines[pipeline].fanIn.append(leftPipeline)
+      else:
+        if leftPipeline == pipeline:
+          pipelines[pipeline].fanIn.append(rightPipeline)
+        elif rightPipeline == pipeline:
+          pipelines[pipeline].entrypoint = False
+          pipelines[pipeline].fanOut.append(leftPipeline)
 
 def parse_pipeline(match: str):
   parts = match.split('|')
@@ -58,10 +68,12 @@ def parse_pipeline(match: str):
 def parse_pipeline_dependency(line: str):
   if len(re.findall(r'\]->\[', line)) > 0:
     return 'required'
-  elif len(re.findall(r'\]-.->\[', line)) > 0:
+  elif len(re.findall(r'\]-\.->\[', line)) > 0:
     return 'optional'
+  elif len(re.findall(r'\]\^\[', line)) > 0:
+    return 'reversal'
   else:
-    return 'none'
+    return None
 
 def parse_pipeline_args(parts: list[str]):
   args = {}
