@@ -4,7 +4,7 @@ from yuml_parser.parse_value import parse_value
 from yuml_parser.pipeline import Pipeline
 
 def parse_yuml(yuml: str):
-  group = Path(yuml).name.split('.')[0]
+  workflow = Path(yuml).name.split('.')[0]
   pipelines: dict[str, Pipeline] = {}
 
   with open(yuml, 'r') as f:
@@ -14,9 +14,9 @@ def parse_yuml(yuml: str):
   for i in range(len(lines)):
     matches = match_pipelines(lines[i])
     if len(matches):
-      set_pipelines(group, pipelines, matches[0], i, lines)
+      set_pipelines(workflow, pipelines, matches[0], i, lines)
     if len(matches) > 1:
-      set_pipelines(group, pipelines, matches[1], i, lines)
+      set_pipelines(workflow, pipelines, matches[1], i, lines)
 
   for pipeline in pipelines.values():
     pipeline.fanIn = list(dict.fromkeys(pipeline.fanIn))
@@ -28,14 +28,14 @@ def match_pipelines(line: str):
   return re.findall(r'\[([^\[\]]+)\]', line)
 
 def set_pipelines(
-  group: str,
+  workflow: str,
   pipelines: dict[str, Pipeline],
   match: str,
   index: int,
   lines: list[str],
 ):
   pipeline, function, path, args = parse_pipeline(match)
-  pipelines[pipeline] = pipelines[pipeline] if pipelines.get(pipeline) else Pipeline(pipeline, function, path, group)
+  pipelines[pipeline] = pipelines[pipeline] if pipelines.get(pipeline) else Pipeline(pipeline, function, path, workflow)
   pipelines[pipeline].args.update(args)
   for j in range(index, len(lines)):
     matches = match_pipelines(lines[j])
