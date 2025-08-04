@@ -34,14 +34,14 @@ def set_pipelines(
   index: int,
   lines: list[str],
 ):
-  pipeline, function, args = parse_pipeline(match)
-  pipelines[pipeline] = pipelines[pipeline] if pipelines.get(pipeline) else Pipeline(pipeline, function, group)
+  pipeline, function, path, args = parse_pipeline(match)
+  pipelines[pipeline] = pipelines[pipeline] if pipelines.get(pipeline) else Pipeline(pipeline, function, path, group)
   pipelines[pipeline].args.update(args)
   for j in range(index, len(lines)):
     matches = match_pipelines(lines[j])
     if len(matches) == 2:
-      leftPipeline, _, _ = parse_pipeline(matches[0])
-      rightPipeline, _, _ = parse_pipeline(matches[1])
+      leftPipeline, _, _, _ = parse_pipeline(matches[0])
+      rightPipeline, _, _, _ = parse_pipeline(matches[1])
       dependency = parse_pipeline_dependency(lines[j])
       if not dependency:
         return
@@ -61,9 +61,10 @@ def set_pipelines(
 def parse_pipeline(match: str):
   parts = match.split('|')
   pipeline = parts[0].strip()
-  function = pipeline.split(':')[0]
+  function = pipeline.split(':')[0].split('.')[-1]
+  path = pipeline.split(':')[0].split('.')[:-1] if '.' in pipeline.split(':')[0] else None
   args = parse_pipeline_args(parts)
-  return pipeline, function, args
+  return pipeline, function, path, args
 
 def parse_pipeline_dependency(line: str):
   if len(re.findall(r'\]->\[', line)) > 0:

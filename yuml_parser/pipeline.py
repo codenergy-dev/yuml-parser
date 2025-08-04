@@ -1,7 +1,8 @@
 class Pipeline:
-  def __init__(self, name: str, function: str, group: str, args: dict = None):
+  def __init__(self, name: str, function: str, path: str, group: str, args: dict = None):
     self.name = name
     self.function = function
+    self.path = path
     self.group = group
     self.args: dict = args if args else {}
     self.fanIn: list[str] = []
