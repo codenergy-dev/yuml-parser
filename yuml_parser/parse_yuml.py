@@ -34,6 +34,9 @@ def set_pipelines(
   index: int,
   lines: list[str],
 ):
+  if match.startswith('note:'):
+    return
+  
   pipeline, function, path, args = parse_pipeline(match)
   pipelines[pipeline] = pipelines[pipeline] if pipelines.get(pipeline) else Pipeline(pipeline, function, path, workflow)
   pipelines[pipeline].args.update(args)
