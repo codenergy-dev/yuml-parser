@@ -1,14 +1,24 @@
-import json
-from yuml_parser.parse_yuml import parse_yuml
+import sys
+from pathlib import Path
+from yuml_parser.yuml_to_json import yuml_to_json
 
 if __name__ == "__main__":
-  import sys
   if len(sys.argv) != 2:
-    print("Usage: python main.py <pipelines.yuml>")
+    print("Usage: python main.py <workflow.yuml|dir>")
     sys.exit(1)
 
-  yuml_path = sys.argv[1]
-  pipelines = parse_yuml(yuml_path)
-  pipelines_json = [pipeline.__dict__ for pipeline in pipelines]
+  input_path = Path(sys.argv[1])
 
-  print(json.dumps(pipelines_json, indent=2, ensure_ascii=False))
+  if input_path.is_file() and input_path.suffix == '.yuml':
+    yuml_to_json(input_path)
+
+  elif input_path.is_dir():
+    yuml_files = list(input_path.rglob("*.yuml"))
+    if not yuml_files:
+      print(f"No .yuml files found: {input_path}")
+    for yuml_file in yuml_files:
+      yuml_to_json(yuml_file)
+
+  else:
+    print("The path '{input_path}' needs to be a .yuml file or a valid directory.")
+    sys.exit(1)
