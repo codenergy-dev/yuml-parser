@@ -65,7 +65,7 @@ def parse_pipeline(match: str):
   parts = match.split('|')
   pipeline = parts[0].strip()
   function = pipeline.split(':')[0].split('.')[-1]
-  path = pipeline.split(':')[0].split('.')[:-1] if '.' in pipeline.split(':')[0] else None
+  path = '.'.join(pipeline.split(':')[0].split('.')[:-1]) if '.' in pipeline.split(':')[0] else None
   args = parse_pipeline_args(parts)
   return pipeline, function, path, args
 
