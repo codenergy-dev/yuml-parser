@@ -85,5 +85,6 @@ def parse_pipeline_args(parts: list[str]):
     for arg in parts[1:]:
       if '=' in arg:
         key, value = map(str.strip, arg.split('='))
-        args[key] = parse_value(value)
+        if value:
+          args[key] = parse_value(value)
   return args
