@@ -2,8 +2,8 @@ name: Build
 
 on:
   push:
-    branches:
-      - main
+    tags:
+      - v*
 
 jobs:
   build:
@@ -37,3 +37,8 @@ jobs:
         with:
           name: ${{ matrix.artifact_name }}
           path: dist/${{ matrix.exe_name }}
+      
+      - uses: ncipollo/release-action@v1
+        with:
+          artifacts: dist/${{ matrix.exe_name }}
+          allowUpdates: true
