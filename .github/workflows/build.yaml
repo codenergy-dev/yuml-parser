@@ -36,12 +36,14 @@ jobs:
 
       - run: pyinstaller --onefile --name yuml_parser main.py
 
+      - run: mv dist/${{ matrix.exe_name }} dist/${{ matrix.artifact_name }}
+
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact_name }}
-          path: dist/${{ matrix.exe_name }}
+          path: dist/${{ matrix.artifact_name }}
       
       - uses: ncipollo/release-action@v1
         with:
-          artifacts: dist/${{ matrix.exe_name }}
+          artifacts: dist/${{ matrix.artifact_name }}
           allowUpdates: true
