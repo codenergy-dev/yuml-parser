@@ -21,6 +21,8 @@ def parse_yuml(yuml: str):
   for pipeline in pipelines.values():
     pipeline.fanIn = list(dict.fromkeys(pipeline.fanIn))
     pipeline.fanOut = list(dict.fromkeys(pipeline.fanOut))
+    if pipeline.entrypoint and pipeline.path and (len(pipeline.fanIn) > 0 or len(pipeline.fanOut) == 0):
+      pipeline.entrypoint = False
   
   return sorted(pipelines.values(), key=lambda pipeline: len(pipeline.fanIn))
 
@@ -57,9 +59,6 @@ def set_pipelines(
       else:
         if leftPipeline == pipeline:
           pipelines[pipeline].fanIn.append(rightPipeline)
-        elif rightPipeline == pipeline:
-          pipelines[pipeline].entrypoint = False
-          pipelines[pipeline].fanOut.append(leftPipeline)
 
 def parse_pipeline(match: str):
   parts = match.split('|')
