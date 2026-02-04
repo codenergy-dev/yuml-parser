@@ -8,3 +8,5 @@ class Pipeline:
     self.fanIn: list[str] = []
     self.fanOut: list[str] = []
     self.entrypoint: bool = True
+    self.dependencies: list[str] = []
+    self.executionPlan: list[str] = []

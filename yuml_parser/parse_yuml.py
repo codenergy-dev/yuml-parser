@@ -21,8 +21,22 @@ def parse_yuml(yuml: str):
   for pipeline in pipelines.values():
     pipeline.fanIn = list(dict.fromkeys(pipeline.fanIn))
     pipeline.fanOut = list(dict.fromkeys(pipeline.fanOut))
+    
     if pipeline.entrypoint and pipeline.path and (len(pipeline.fanIn) > 0 or len(pipeline.fanOut) == 0):
       pipeline.entrypoint = False
+    
+  for pipeline in pipelines.values():
+    pipeline.dependencies = list_pipeline_dependencies(pipelines, pipeline, [])
+    pipeline.dependencies.reverse()
+    pipeline.dependencies = list(dict.fromkeys(pipeline.dependencies))
+  
+  for pipeline in pipelines.values():
+    pipeline.executionPlan = list_pipeline_execution_plan(pipelines, pipeline, [])
+    pipeline.executionPlan = list(dict.fromkeys(pipeline.executionPlan))
+  
+  for pipeline in pipelines.values():
+    if not pipeline.entrypoint:
+      pipeline.executionPlan = pipeline.executionPlan[len(pipeline.dependencies):]
   
   return sorted(pipelines.values(), key=lambda pipeline: len(pipeline.fanIn))
 
@@ -87,3 +101,17 @@ def parse_pipeline_args(parts: list[str]):
         if value:
           args[key] = parse_value(value)
   return args
+
+def list_pipeline_dependencies(pipelines: dict[str, Pipeline], pipeline: Pipeline, dependencies: list[str]):
+  for dependency in pipeline.fanIn:
+    dependencies.append(dependency)
+    list_pipeline_dependencies(pipelines, pipelines[dependency], dependencies)
+  return dependencies
+
+def list_pipeline_execution_plan(pipelines: dict[str, Pipeline], pipeline: Pipeline, executionPlan: list[str]):
+  executionPlan.extend(pipeline.dependencies)
+  executionPlan.append(pipeline.name)
+  for nextPipeline in pipeline.fanOut:
+    if nextPipeline not in executionPlan:
+      list_pipeline_execution_plan(pipelines, pipelines[nextPipeline], executionPlan)
+  return executionPlan
