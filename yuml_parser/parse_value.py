@@ -1,7 +1,11 @@
 import ast
+import re
 
 def parse_value(value: str):
   value = value.strip()
+  string = re.search(r"^['\"](.*?)['\"]$", value)
+  if string:
+    return string.group(1)
   if value.lower() in ("true", "false"):
     return value.lower() == "true"
   if value.lower() == "none":
