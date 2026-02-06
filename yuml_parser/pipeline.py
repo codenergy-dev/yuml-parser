@@ -6,6 +6,7 @@ class Pipeline:
     self.workflow = workflow
     self.args: dict = args if args else {}
     self.fanIn: list[str] = []
+    self.fanInNullable: list[str] = []
     self.fanOut: list[str] = []
     self.entrypoint: bool = True
     self.dependencies: list[str] = []

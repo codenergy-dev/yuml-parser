@@ -20,6 +20,7 @@ def parse_yuml(yuml: str):
 
   for pipeline in pipelines.values():
     pipeline.fanIn = list(dict.fromkeys(pipeline.fanIn))
+    pipeline.fanInNullable = list(dict.fromkeys(pipeline.fanInNullable))
     pipeline.fanOut = list(dict.fromkeys(pipeline.fanOut))
     
     if pipeline.entrypoint and pipeline.path and (len(pipeline.fanIn) > 0 or len(pipeline.fanOut) == 0):
@@ -70,6 +71,10 @@ def set_pipelines(
         elif rightPipeline == pipeline and dependency == 'required':
           pipelines[pipeline].entrypoint = False
           pipelines[pipeline].fanIn.append(leftPipeline)
+        elif rightPipeline == pipeline and dependency == 'nullable':
+          pipelines[pipeline].entrypoint = False
+          pipelines[pipeline].fanIn.append(leftPipeline)
+          pipelines[pipeline].fanInNullable.append(leftPipeline)
       else:
         if leftPipeline == pipeline:
           pipelines[pipeline].fanIn.append(rightPipeline)
@@ -85,6 +90,8 @@ def parse_pipeline(match: str):
 def parse_pipeline_dependency(line: str):
   if len(re.findall(r'\]->\[', line)) > 0:
     return 'required'
+  elif len(re.findall(r'\]\?->\[', line)) > 0:
+    return 'nullable'
   elif len(re.findall(r'\]-\.->\[', line)) > 0:
     return 'optional'
   elif len(re.findall(r'\]\^\[', line)) > 0:
